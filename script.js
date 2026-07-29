@@ -618,7 +618,13 @@ function setupCandles(){
     blowOutNext(); // un clic = une bougie soufflee, on peut cliquer plusieurs fois
   });
 
-  navigator.mediaDevices?.getUserMedia({ audio:true })
+  navigator.mediaDevices?.getUserMedia({
+    // echoCancellation/noiseSuppression/autoGainControl a false : sans ca,
+    // le navigateur bascule en mode "appel vocal" des qu'il detecte le
+    // micro, ce qui fait baisser (ou sauter) automatiquement le volume de
+    // la musique de fond tant que le micro est actif
+    audio: { echoCancellation:false, noiseSuppression:false, autoGainControl:false }
+  })
     .then(stream => {
       clearTimeout(fallbackTimer);
       const ctx = getAudioCtx();
@@ -630,7 +636,11 @@ function setupCandles(){
       let lastBlow = 0;
 
       function checkVolume(){
-        if(finished){ stream.getTracks().forEach(t => t.stop()); return; }
+        if(finished){
+          stream.getTracks().forEach(t => t.stop());
+          music.volume = 0.5;
+          return;
+        }
         analyser.getByteTimeDomainData(data);
         let sum = 0;
         for(let i=0;i<data.length;i++){ const v = (data[i]-128)/128; sum += v*v; }
