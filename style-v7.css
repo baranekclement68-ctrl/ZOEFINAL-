@@ -112,6 +112,12 @@ input{ font-family:inherit; }
   pointer-events:auto;
   transform:translateY(0);
 }
+/* au chargement de la page, seul l'ecran actif doit exister visuellement ;
+   les autres passent en display:none tant qu'ils n'ont jamais ete ouverts
+   (le JS reprend la main ensuite via showScreen, qui gere le display
+   pendant les transitions d'entree/sortie) */
+.screen:not(.active){ display:none; }
+#screen-gate.active{ display:flex; }
 
 /* =====================================================================
    ECRAN 1 — LA GRILLE (verification du prenom)

@@ -143,7 +143,33 @@ const SCREENS = ["screen-gate","screen-hub","screen-souvenirs","screen-histoire"
 const backBtn = document.getElementById("back-btn");
 
 function showScreen(id){
-  SCREENS.forEach(s => document.getElementById(s).classList.toggle("active", s === id));
+  // Avant : on se contentait de toggle la classe "active" (opacity/pointer-events),
+  // mais les ecrans caches restaient quand meme "display:flex" en permanence.
+  // Or l'album (perspective + preserve-3d sur chaque page) et l'enveloppe
+  // (preserve-3d aussi) creent chacun plusieurs couches GPU des qu'ils ont
+  // ete affiches une fois — et ces couches restaient actives en arriere-plan
+  // meme apres etre revenu au hub. Sur mobile (surtout iOS Safari), accumuler
+  // ainsi plusieurs contextes 3D composites en arriere-plan est un bug connu :
+  // au bout de 2-3 ecrans visites, Safari "aplatit" la page en image figee
+  // et arrete de router les clics/touch — exactement le bug decrit.
+  // Fix : une fois qu'un ecran n'est plus actif ET que sa transition de sortie
+  // est terminee, on le passe en display:none pour liberer completement son
+  // contexte de rendu/compositing, pas seulement le cacher visuellement.
+  SCREENS.forEach(s => {
+    const el = document.getElementById(s);
+    if(s === id){
+      el.style.display = "";
+      // relance la transition d'entree meme si l'ecran etait display:none juste avant
+      requestAnimationFrame(() => el.classList.add("active"));
+    } else if(el.classList.contains("active")){
+      el.classList.remove("active");
+      setTimeout(() => {
+        if(!el.classList.contains("active")) el.style.display = "none";
+      }, 650); // legerement > les .6s de transition CSS
+    } else {
+      el.style.display = "none";
+    }
+  });
   const showBack = (id === "screen-souvenirs" || id === "screen-histoire" || id === "screen-surprise");
   backBtn.hidden = !showBack;
 }
