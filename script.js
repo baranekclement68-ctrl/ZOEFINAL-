@@ -212,44 +212,24 @@ document.getElementById("gate-enter-btn").addEventListener("click", () => {
 
 /* ---------------------------------------------------------------------
    7) ECRAN 2 — LES 3 CADEAUX
+   (volontairement tres simple : un clic = on va direct sur la page,
+   pas d'etat "ouvert"/"verrouille" a gerer, pour eviter tout bug)
    --------------------------------------------------------------------- */
-const giftState = { souvenirs:false, histoire:false };
 const giftBoxes = {
   souvenirs: document.getElementById("gift-souvenirs"),
   histoire: document.getElementById("gift-histoire"),
   surprise: document.getElementById("gift-surprise"),
 };
-const hubHint = document.getElementById("hub-hint");
-const toastEl = document.getElementById("toast");
-let toastTimer = null;
-function showToast(text){
-  toastEl.textContent = text;
-  toastEl.classList.add("visible");
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toastEl.classList.remove("visible"), 2200);
-}
-
-function markGiftOpened(name){
-  if(giftState[name]) return;
-  giftState[name] = true;
-  giftBoxes[name].classList.add("gift-opened");
-  showToast(name === "souvenirs" ? "Souvenirs ouvert ✦" : "Notre histoire ouvert ✦");
-}
 
 giftBoxes.souvenirs.addEventListener("click", () => {
   playClickSound();
   showScreen("screen-souvenirs");
   albumGoTo(0, true);
-  // on marque le cadeau comme ouvert des qu'on y entre : Zoe ne devrait
-  // pas etre obligee d'aller jusqu'a la toute derniere page pour que ca
-  // compte, sinon la surprise ne se debloque jamais si elle quitte avant
-  markGiftOpened("souvenirs");
 });
 giftBoxes.histoire.addEventListener("click", () => {
   playClickSound();
   showScreen("screen-histoire");
   histoireGoTo(0);
-  markGiftOpened("histoire");
 });
 giftBoxes.surprise.addEventListener("click", () => {
   playClickSound();
@@ -300,7 +280,6 @@ albumEl.addEventListener("touchend", (e) => {
 document.querySelector(".album-back-btn").addEventListener("click", (e) => {
   e.stopPropagation();
   playClickSound();
-  markGiftOpened("souvenirs");
   showScreen("screen-hub");
 });
 
@@ -525,7 +504,6 @@ function typeLetter(){
 document.getElementById("histoire-end-btn").addEventListener("click", (e) => {
   e.stopPropagation();
   playClickSound();
-  markGiftOpened("histoire");
   showScreen("screen-hub");
 });
 
